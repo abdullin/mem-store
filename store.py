@@ -3,7 +3,7 @@ import os
 import shutil
 from os import path
 
-FOLDER_NAME = 'mem-store'
+FOLDER_NAME = 'mem-objects'
 
 
 def find_root(file):
