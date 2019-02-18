@@ -5,27 +5,22 @@ from os import path
 import click
 
 import store
+from tg_to_story import render
 
 
 @click.group()
 def main():
-   pass
-
-
-
+    pass
 
 
 @main.command()
 def init():
-
     if os.path.isdir(store.FOLDER_NAME):
         print("{0} folder already exists".format(store.FOLDER_NAME))
         pass
 
-
     os.makedirs(store.FOLDER_NAME)
     print("{0} folder created".format(store.FOLDER_NAME))
-
 
 
 def _ensure_root(file):
@@ -34,11 +29,18 @@ def _ensure_root(file):
         sys.exit("Error: No memory store found in parent path")
     return root
 
+
 @main.command()
 @click.argument('file')
 def fix(file):
     root = _ensure_root(file)
     store.fix_file(root, file)
+
+
+@main.command()
+@click.argument('target')
+def story(target):
+    render(os.path.curdir, target)
 
 
 @main.command()
@@ -49,9 +51,6 @@ def add(file):
     if path.islink(file):
         sys.exit("Error: file is a link")
     store.add_file(root, file)
-
-
-
 
 
 if __name__ == "__main__":
