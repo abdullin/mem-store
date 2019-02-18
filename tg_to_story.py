@@ -47,8 +47,8 @@ def render(source, target, context = "None"):
                 text = i.get('text', None)
                 if text:
                     lines = text.split('\n')
-                    for l in lines:
-                        w.write('<p>' + l + '</p>\n')
+
+                    w.write('<p>' + '<br>\n'.join(lines) + '</p>\n')
 
                 if 'video' in i:
                     video = i['video']
