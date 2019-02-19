@@ -120,20 +120,21 @@ def _load_items(dir):
 
     items = []
 
-    # unique = set()
+    line_num = 0
+
     with open(name, mode='r') as js:
         for line in js:
             if line:
-                # if line in unique:
-                #    continue
-                # unique.add(line)
+                try:
+                    item = json.loads(line)
 
-                item = json.loads(line)
+                    d = parser.parse(item['_time'])
 
-                d = parser.parse(item['_time'])
+                    item['_time'] = d
+                    item['_date'] = d.date()
 
-                item['_time'] = d
-                item['_date'] = d.date()
-
-                items.append(item)
+                    items.append(item)
+                except Exception as ex:
+                    raise ValueError("Error on line {0}".format(line_num)) from ex
+            line_num += 1
     return items
