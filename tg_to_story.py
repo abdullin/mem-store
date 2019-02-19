@@ -1,6 +1,5 @@
 import json
 import os
-from collections import OrderedDict
 from itertools import groupby
 from shutil import copyfile
 
@@ -41,19 +40,52 @@ def render(source, target, context = "None"):
         for k, g in groupby(items, lambda x: x['_date']):
 
             w.write('<h2>{0}</h2>\n'.format(k))
+
+
+
             for i in g:
                 w.write('<div class="row"><div class="col-12 justify-content-center col-md-8">\n')
 
+                if 'caption' in i:
+                    w.write('<strong>{0}</strong><br>\n'.format(i['caption']))
+
+
+                def ensure_file(file):
+                    name = file.get('name', None) or os.path.basename(file['file_path'])
+                    nice_name = "{0}_{1}".format(k, name).lower()
+
+                    dest_file = os.path.join(target, nice_name)
+                    if not os.path.exists(dest_file):
+                        copyfile(file['sha1'], dest_file)
+
+                    return nice_name
+
+
                 text = i.get('text', None)
+
+
+
+
                 if text:
                     lines = text.split('\n')
-
                     w.write('<p>' + '<br>\n'.join(lines) + '</p>\n')
+                if 'document' in i:
+                    doc = i['document']
+                    doc_name = ensure_file(doc)
+
+                    text = "<em>{0}</em>".format(doc['file_name'])
+
+                    if 'thumb' in doc:
+                        thumb_name = ensure_file(doc['thumb'])
+                        text = "<img src='{0}'><br>".format(thumb_name) + text
+                    w.write("<a href='{0}'>{1}</a>\n".format(doc_name, text))
+
+
 
                 if 'video' in i:
                     video = i['video']
-                    video_name = copy_to_target(video, target)
-                    thumb_name = copy_to_target(video['thumb'], target)
+                    video_name = ensure_file(video)
+                    thumb_name = ensure_file(video['thumb'])
 
 
                     w.write("<video controls poster='{2}' preload='none'>"
@@ -69,7 +101,7 @@ def render(source, target, context = "None"):
                         if 'sha1' in p:
                             photo = p
                             break
-                    name = copy_to_target(photo, target)
+                    name = ensure_file(photo)
 
 
                     w.write("<img src='{0}' class='img-fluid'>\n".format(name))
@@ -78,15 +110,6 @@ def render(source, target, context = "None"):
         w.write('</div>\n')
         w.write('</body></html>')
     print('rendered')
-
-def copy_to_target(file, target):
-    name = file.get('name', None) or os.path.basename(file['file_path'])
-
-    dest_file = os.path.join(target, name)
-    if not os.path.exists(dest_file):
-        copyfile(file['sha1'], dest_file)
-
-    return name
 
 
 def _load_items(dir):
